@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第8课 · Bài tập sắp xếp câu</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:20px}
+.app{max-width:760px;margin:0 auto}
+.header{background:#1A3C5E;color:#fff;border-radius:16px;padding:24px 28px;margin-bottom:20px}
+.header h1{font-size:22px;font-weight:600;margin-bottom:4px}
+.header p{font-size:14px;opacity:0.75;margin-bottom:14px}
+.progress-bar{height:6px;background:rgba(255,255,255,0.2);border-radius:3px;margin-bottom:6px}
+.progress-fill{height:6px;background:#F5A623;border-radius:3px;transition:width 0.4s}
+.progress-label{font-size:12px;opacity:0.7}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat{background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid #e2e8f0}
+.stat-val{font-size:26px;font-weight:600;color:#1A3C5E}
+.stat-val.green{color:#0F6E56}
+.stat-val.red{color:#993C1D}
+.stat-lbl{font-size:12px;color:#64748b;margin-top:3px}
+.card{background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:18px;margin-bottom:14px;transition:box-shadow 0.2s}
+.card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.q-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.q-num{width:30px;height:30px;border-radius:50%;background:#E1F5EE;color:#0F6E56;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-label{font-size:13px;color:#64748b}
+.q-tag{margin-left:auto;font-size:11px;background:#EEEDFE;color:#3C3489;padding:3px 10px;border-radius:20px;font-weight:500;white-space:nowrap}
+.section-title{font-size:11px;color:#94a3b8;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:6px}
+.word-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}
+.answer-area{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:10px 12px;background:#fff;border:1.5px dashed #cbd5e1;border-radius:10px;margin-bottom:12px;transition:border-color 0.2s,background 0.2s}
+.answer-area.correct{border:1.5px solid #1D9E75;background:#E1F5EE}
+.answer-area.wrong{border:1.5px solid #D85A30;background:#FAECE7}
+.chip{padding:7px 13px;background:#fff;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;color:#1A3C5E;cursor:pointer;user-select:none;transition:transform 0.1s,background 0.15s,border-color 0.15s}
+.chip:hover{background:#f1f5f9;border-color:#94a3b8;transform:scale(1.03)}
+.chip:active{transform:scale(0.97)}
+.answer-area .chip{background:#dbeafe;border-color:#93c5fd;color:#1e3a5f}
+.answer-area.correct .chip{background:#bbf7d0;border-color:#34d399;color:#064e3b}
+.answer-area.wrong .chip{background:#fed7aa;border-color:#fb923c;color:#7c2d12}
+.placeholder{font-size:13px;color:#cbd5e1;padding:4px 0;pointer-events:none}
+.q-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{padding:7px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background 0.15s;font-family:inherit}
+.btn:hover{background:#f1f5f9}
+.btn-check{border-color:#378ADD;color:#185FA5;background:#f0f7ff}
+.btn-check:hover{background:#dbeafe}
+.btn-reset{color:#64748b}
+.feedback{font-size:13px;font-weight:600;margin-left:auto}
+.feedback.ok{color:#0F6E56}
+.feedback.err{color:#993C1D;font-weight:400;max-width:420px}
+.result-banner{background:#E1F5EE;border:1px solid #5DCAA5;border-radius:16px;padding:24px;text-align:center;margin-bottom:20px;display:none}
+.result-banner.show{display:block}
+.result-banner h2{font-size:22px;font-weight:600;color:#085041;margin-bottom:8px}
+.result-banner p{font-size:14px;color:#0F6E56;margin-bottom:14px}
+.btn-restart{background:#1D9E75;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:500}
+.btn-restart:hover{background:#0F6E56}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>第8课 · 我的眼镜摔坏了</h1>
+    <p>Bài tập sắp xếp câu — nhấn vào từ để sắp xếp thành câu đúng</p>
+    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+    <div class="progress-label" id="prog-label">0 / 30 hoàn thành</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s-done">0</div><div class="stat-lbl">Hoàn thành</div></div>
+    <div class="stat"><div class="stat-val green" id="s-correct">0</div><div class="stat-lbl">Đúng</div></div>
+    <div class="stat"><div class="stat-val red" id="s-wrong">0</div><div class="stat-lbl">Sai</div></div>
+  </div>
+
+  <div class="result-banner" id="result-banner">
+    <h2 id="result-title"></h2>
+    <p id="result-msg"></p>
+    <button class="btn-restart" onclick="restartAll()">Làm lại từ đầu ↺</button>
+  </div>
+
+  <div id="questions"></div>
+</div>
+
+<script>
+const exercises = [
+  {num:1,tag:"差一点儿",words:["今天早上","我","差一点儿","迟到"],answer:"今天早上我差一点儿迟到"},
+  {num:2,tag:"差一点儿",words:["我","差一点儿","没买到","那本书"],answer:"我差一点儿没买到那本书"},
+  {num:3,tag:"差一点儿",words:["他","出门的时候","差一点儿","摔倒"],answer:"他出门的时候差一点儿摔倒"},
+  {num:4,tag:"倒霉",words:["今天","我","真","倒霉"],answer:"今天我真倒霉"},
+  {num:5,tag:"ADJ+得很",words:["今天","倒霉","得很"],answer:"今天倒霉得很"},
+  {num:6,tag:"整整",words:["路上","堵车","整整","二十分钟"],answer:"路上堵车整整二十分钟"},
+  {num:7,tag:"整整",words:["他们","喝了","整整","一个晚上"],answer:"他们喝了整整一个晚上"},
+  {num:8,tag:"造成",words:["因为他们","不遵守交通规则","造成了","这起事故"],answer:"因为他们不遵守交通规则造成了这起事故"},
+  {num:9,tag:"造成",words:["昨晚","那场大雪","造成了","堵车"],answer:"昨晚那场大雪造成了堵车"},
+  {num:10,tag:"遵守",words:["我","希望","大家","可以","遵守","交通规则"],answer:"我希望大家可以遵守交通规则"},
+  {num:11,tag:"遵守",words:["我也希望","员工们","遵守","公司的","规定"],answer:"我也希望员工们遵守公司的规定"},
+  {num:12,tag:"之一",words:["他","是","我最好的朋友","之一"],answer:"他是我最好的朋友之一"},
+  {num:13,tag:"之一",words:["太多摩托车","也是","造成交通拥挤的","原因之一"],answer:"太多摩托车也是造成交通拥挤的原因之一"},
+  {num:14,tag:"一年比一年",words:["有","汽车","的人","一年比一年","多"],answer:"有汽车的人一年比一年多"},
+  {num:15,tag:"一年比一年",words:["他们公司","的规模","一年比一年","大"],answer:"他们公司的规模一年比一年大"},
+  {num:16,tag:"引起",words:["今天的事故","就是","一辆自行车","引起的"],answer:"今天的事故就是一辆自行车引起的"},
+  {num:17,tag:"引起",words:["这件事","引起了","大家的","注意"],answer:"这件事引起了大家的注意"},
+  {num:18,tag:"被动句",words:["我的眼镜","摔","坏了"],answer:"我的眼镜摔坏了"},
+  {num:19,tag:"被动句",words:["照片","洗好了"],answer:"照片洗好了"},
+  {num:20,tag:"被动句",words:["自行车","修","好了"],answer:"自行车修好了"},
+  {num:21,tag:"ADJ+得很",words:["她","漂亮","得很"],answer:"她漂亮得很"},
+  {num:22,tag:"ADJ+得很",words:["北京的冬天","冷","得很"],answer:"北京的冬天冷得很"},
+  {num:23,tag:"别提了",words:["嗨","别提了","昨天","又拉肚子了"],answer:"嗨别提了昨天又拉肚子了"},
+  {num:24,tag:"别提了",words:["你","别提他了","我们","已经","分手了"],answer:"你别提他了我们已经分手了"},
+  {num:25,tag:"保证",words:["骑车","上班","能","保证","时间"],answer:"骑车上班能保证时间"},
+  {num:26,tag:"赶快",words:["最好","还是","赶快","发展","地铁"],answer:"最好还是赶快发展地铁"},
+  {num:27,tag:"量词重叠",words:["这些照片","张张","照得","都很好"],answer:"这些照片张张照得都很好"},
+  {num:28,tag:"量词重叠",words:["我们班的","同学","个个","都很努力"],answer:"我们班的同学个个都很努力"},
+  {num:29,tag:"倍",words:["你的眼镜","比我的眼镜","贵了","一倍"],answer:"你的眼镜比我的眼镜贵了一倍"},
+  {num:30,tag:"拥挤/主要",words:["摩托车太多","是","造成交通拥挤的","主要原因"],answer:"摩托车太多是造成交通拥挤的主要原因"}
+];
+
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+const state={};
+exercises.forEach(ex=>{state[ex.num]={bank:shuffle([...ex.words]),answer:[],done:false,correct:null};});
+
+function render(){
+  const c=document.getElementById('questions');c.innerHTML='';
+  exercises.forEach(ex=>renderCard(ex.num));
+  updateStats();
+}
+
+function renderCard(num){
+  const ex=exercises.find(e=>e.num===num);
+  const s=state[num];
+  let el=document.getElementById('card-'+num);
+  const isNew=!el;
+  if(isNew){el=document.createElement('div');el.className='card';el.id='card-'+num;document.getElementById('questions').appendChild(el);}
+
+  const aClass=s.done?(s.correct?'answer-area correct':'answer-area wrong'):'answer-area';
+  const bankHtml=s.bank.length===0?'<span class="placeholder">—</span>':s.bank.map((w,i)=>`<span class="chip" onclick="move(${num},${i},'bank')">${w}</span>`).join('');
+  const ansHtml=s.answer.length===0?'<span class="placeholder">Nhấn vào từ bên trên để sắp xếp...</span>':s.answer.map((w,i)=>`<span class="chip" onclick="${s.done?'':'move('+num+','+i+',\'ans\')'}">${w}</span>`).join('');
+
+  let actionsHtml='';
+  if(!s.done){
+    actionsHtml=`<button class="btn btn-check" onclick="check(${num})">✓ Kiểm tra</button><button class="btn btn-reset" onclick="reset(${num})">↺</button>`;
+  } else if(s.correct){
+    actionsHtml='<span class="feedback ok">✓ Chính xác!</span>';
+  } else {
+    actionsHtml=`<span class="feedback err">✗ Đáp án: ${ex.answer}。</span><button class="btn btn-reset" style="margin-left:auto" onclick="reset(${num})">↺ Thử lại</button>`;
+  }
+
+  el.innerHTML=`
+    <div class="q-header">
+      <div class="q-num">${num}</div>
+      <span class="q-label">Sắp xếp thành câu đúng:</span>
+      <span class="q-tag">${ex.tag}</span>
+    </div>
+    <div class="section-title">Các từ</div>
+    <div class="word-bank" id="bank-${num}">${bankHtml}</div>
+    <div class="section-title">Câu trả lời</div>
+    <div class="${aClass}" id="ans-${num}">${ansHtml}</div>
+    <div class="q-actions" id="act-${num}">${actionsHtml}</div>
+  `;
+}
+
+function move(num,idx,from){
+  const s=state[num];if(s.done)return;
+  if(from==='bank'){s.answer.push(s.bank.splice(idx,1)[0]);}
+  else{s.bank.push(s.answer.splice(idx,1)[0]);}
+  renderCard(num);updateStats();
+}
+
+function check(num){
+  const ex=exercises.find(e=>e.num===num);
+  const s=state[num];if(s.answer.length===0)return;
+  s.correct=s.answer.join('')===ex.answer;
+  s.done=true;renderCard(num);updateStats();checkAllDone();
+}
+
+function reset(num){
+  const ex=exercises.find(e=>e.num===num);
+  const s=state[num];
+  s.bank=shuffle([...ex.words]);s.answer=[];s.done=false;s.correct=null;
+  renderCard(num);updateStats();
+}
+
+function updateStats(){
+  const done=exercises.filter(e=>state[e.num].done).length;
+  const correct=exercises.filter(e=>state[e.num].done&&state[e.num].correct).length;
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-correct').textContent=correct;
+  document.getElementById('s-wrong').textContent=done-correct;
+  document.getElementById('prog').style.width=Math.round(done/30*100)+'%';
+  document.getElementById('prog-label').textContent=done+' / 30 hoàn thành';
+}
+
+function checkAllDone(){
+  const done=exercises.filter(e=>state[e.num].done).length;
+  if(done<30)return;
+  const correct=exercises.filter(e=>state[e.num].done&&state[e.num].correct).length;
+  const pct=Math.round(correct/30*100);
+  document.getElementById('result-title').textContent=pct===100?'🎉 Xuất sắc! 满分！':pct>=70?'👍 Làm tốt lắm! 加油！':'💪 Cần ôn thêm nhé!';
+  document.getElementById('result-msg').textContent=`Bạn trả lời đúng ${correct}/30 câu (${pct}%). ${correct===30?'Tuyệt vời, không có câu nào sai!':'Hãy làm lại các câu sai để ghi nhớ tốt hơn nhé.'}`;
+  const b=document.getElementById('result-banner');b.classList.add('show');b.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function restartAll(){
+  exercises.forEach(ex=>{state[ex.num]={bank:shuffle([...ex.words]),answer:[],done:false,correct:null};});
+  document.getElementById('result-banner').classList.remove('show');
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
